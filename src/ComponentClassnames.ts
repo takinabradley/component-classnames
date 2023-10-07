@@ -65,14 +65,12 @@ export interface CustomCSSConfig {
 }
 
 function CustomCSS(config?: CustomCSSConfig): CustomCSS {
-  if (!config) return { unstyled: false, stylesheets: [], classNames: {}, styles: {}, modifiers: {} }
-
   return {
-    unstyled: config.unstyled || false,
-    stylesheets: config.stylesheets || [],
-    classNames: config.classNames || {},
-    styles: config.styles || {},
-    modifiers: config.modifiers || {}
+    unstyled: config?.unstyled || false,
+    stylesheets: config?.stylesheets || [],
+    classNames: config?.classNames || {},
+    styles: config?.styles || {},
+    modifiers: config?.modifiers || {}
   }
 
   // use in the future to ensure nothing gets modified? Might make merging harder..
@@ -117,11 +115,13 @@ function mergeStyles(customCSS1: CustomCSS, customCSS2: CustomCSS): CSSPropertie
 }
 
 function mergeModifiers(customCSS1: CustomCSS, customCSS2: CustomCSS): ModifiersMap {
-  const newModifiers: ModifiersMap = {}
+  const mergedModifiers: ModifiersMap = {}
   for (const key in customCSS2.modifiers) {
-    newModifiers[key] = [...customCSS1.modifiers[key], ...customCSS2.modifiers[key]]
+    const originalModifiers = customCSS1.modifiers[key] || []
+    const newModifiers = customCSS2.modifiers[key] || []
+    mergedModifiers[key] = [...originalModifiers, ...newModifiers]
   }
-  return newModifiers
+  return mergedModifiers
 }
 
 function mergeCustomCSS(...customCSSObjs: CustomCSS[]): CustomCSS {
@@ -174,6 +174,20 @@ function getClassNamesFromStylesheets(customCSS: CustomCSS, elementName: string)
   return classNames
 }
 
+function getClassNamesFromModifiers(customCSS: CustomCSS, elementName: string): cnDedupe.ArgumentArray {
+  const classNames: cnDedupe.ArgumentArray = []
+  if (customCSS.modifiers[elementName]) {
+    customCSS.modifiers[elementName].map(mod => {
+      const fullModifier = `${elementName}--${mod}`
+      const styleSheetModifiers = getClassNamesFromStylesheets(customCSS, fullModifier)
+      const classNameModifiers = customCSS.classNames[fullModifier] || []
+      classNames.push(...styleSheetModifiers, ...classNameModifiers)
+    })
+  }
+  
+  return classNames
+}
+
 function use(...customCSSObjs: CustomCSS[]) {
   const customCSS = mergeCustomCSS(...customCSSObjs)
 
@@ -186,7 +200,8 @@ function use(...customCSSObjs: CustomCSS[]) {
   const classNames = (elementName: string): string => {
     const cssModuleNames: string[] = getClassNamesFromStylesheets(customCSS, elementName)
     const classNameNames = customCSS.classNames[elementName] || []
-    const allNames = cnDedupe([...cssModuleNames, ...classNameNames])
+    const modifierNames = getClassNamesFromModifiers(customCSS, elementName)
+    const allNames = cnDedupe([...cssModuleNames, ...classNameNames, ...modifierNames])
     return allNames
   }
 
