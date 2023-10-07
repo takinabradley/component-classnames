@@ -3,7 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "build": "bun build src/ComponentClassnames.ts --outdir=out/"
+    "build": "bun build src/ComponentClassnames.ts --outdir=out/ --target=node"
   },
   "devDependencies": {
     "@types/react": "^18.2.25",
