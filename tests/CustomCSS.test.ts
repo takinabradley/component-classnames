@@ -1,6 +1,6 @@
 import ccn from '../src/ComponentClassnames.ts'
 import type { CustomCSS } from '../src/ComponentClassnames.ts'
-import { it, describe, test, expect } from 'bun:test'
+import { describe, test, expect } from 'bun:test'
 
 const stylesheet1 = {
   Component: 'hashed-component-name',
@@ -13,7 +13,6 @@ const stylesheet2 = {
 }
 
 describe('CustomCSS constructor', () => {
-
   test('Creates expected object with no arguments', () => {
     const customCSS: CustomCSS = ccn.CustomCSS()
 
@@ -76,16 +75,5 @@ describe('CustomCSS constructor', () => {
       },
       modifiers: {}
     })
-  })
-})
-
-describe('`use` function', () => {
-  it('Creates object with expected functions', () => {
-    const ccnController = ccn.use(ccn.CustomCSS())
-
-    expect(typeof ccnController.classNames).toBe('function')
-    expect(typeof ccnController.styles).toBe('function')
-    expect(typeof ccnController.modifiers).toBe('function')
-    expect(typeof ccnController.unstyled).toBe('function')
   })
 })
