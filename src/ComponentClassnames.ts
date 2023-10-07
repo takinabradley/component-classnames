@@ -54,6 +54,70 @@ interface CustomCSSConfig {
   styles?: CSSPropertiesMap
   modifiers?: ModifiersMap
 }
+
+function mergeClassNames(customCSS1: CustomCSS, customCSS2: CustomCSS): ClassNameMap {
+  const mergedClassNames: ClassNameMap = {}
+  for (const key in customCSS2.classNames) {
+    const thing = customCSS2.classNames[key]
+    // IMPROVEMENT?: could probably dedupe this and not rely on cnDedupe....?
+    const originalClassNames = customCSS1.classNames[key] || []
+    const newClassNames = customCSS2.classNames[key] || []
+    mergedClassNames[key] = [...originalClassNames, ...newClassNames]
+  }
+  return mergedClassNames
+}
+
+function mergeStyles(customCSS1: CustomCSS, customCSS2: CustomCSS): CSSPropertiesMap {
+  const newStyles: CSSPropertiesMap = {}
+  for (const key in customCSS2.styles) {
+    newStyles[key] = { ...customCSS1.styles[key], ...customCSS2.styles[key] }
+  }
+  return newStyles
+}
+
+function mergeModifiers(customCSS1: CustomCSS, customCSS2: CustomCSS): ModifiersMap {
+  const newModifiers: ModifiersMap = {}
+  for (const key in customCSS2.modifiers) {
+    newModifiers[key] = [...customCSS1.modifiers[key], ...customCSS2.modifiers[key]]
+  }
+  return newModifiers
+}
+
+function mergeCustomCSS(...customCSSObjs: CustomCSS[]): CustomCSS {
+  return customCSSObjs.reduce<CustomCSS>((merged, current) => {
+    // if `current` requests unstyled, then just use arguments from the current CustomCSS
+    // We *DON'T* return `current` directly, because we don't want to accidentally write to current on a next pass.
+    if (current.unstyled) return { ...current }
+    
+    merged.unstyled = current.unstyled
+    merged.classNames = mergeClassNames(merged, current)
+    merged.styles = mergeStyles(merged, current)
+    merged.modifiers = mergeModifiers(merged, current)
+
+    // I don't actually know how styles will behave like this..... I guess we'll find out!
+    merged.stylesheets = [...merged.stylesheets, ...current.stylesheets]
+
+    /* 
+        STYLESHEETS:
+        USTYLED TRUE -> COPY ONLY PROVIDED STYLESHEETS FROM CURRENT
+        USTYLED FALSE -> KEEP BOTH
+
+        FOR CLASSNAMES, LOOK UP ELEMENT NAME ON PROVIDED STYLESHEETS FIRST, IF IT EXISTS USE IT, THEN ADD OTHER CLASSNAMES
+        FOR MODIFIERS, LOOK UP ELEMENT NAME PROVIDED ON STYLESHEETS FIRST, IF IT EXISTS, USE MODIFIED VERSION OF IT. 
+
+        THIS MAY MAKE MODIFIER PROBLEM LESS COMPLEX AND MORE FLEXIBLE
+
+        // iterate through array for property name on stylesheets first,
+        // then apply any classnames in the 'classNames' array.
+
+        // the classNames array should be applied as-is, with no key transformation....?
+        
+    */
+    
+    return {...merged}
+
+  }, CustomCSS())
+}
 function CustomCSS(config?: CustomCSSConfig): CustomCSS {
   if (!config) return { unstyled: false, stylesheets: [], classNames: {}, styles: {}, modifiers: {} }
 
