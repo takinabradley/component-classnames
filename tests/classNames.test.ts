@@ -3,7 +3,8 @@ import { it, describe, expect } from 'bun:test'
 
 const stylesheet1 = {
   Component: 'hashed-component-name',
-  Component__child: 'hashed-child_component-name'
+  Component__child: 'hashed-child_component-name',
+  'Component__child--mod': 'MODDED!'
 }
 
 const stylesheet2 = {
@@ -12,14 +13,15 @@ const stylesheet2 = {
 }
 
 describe('`classNames` function', () => {
-  it('grabs correct classname from stylesheet', () => {
+  describe('uses CSS modules as expected', () => {
+    it('uses correct classname from stylesheet', () => {
     const customCSS = ccn.CustomCSS({ stylesheets: [stylesheet1] })
 
     const { classNames } = ccn.use(customCSS)
     expect(classNames('Component')).toBe('hashed-component-name')
   })
 
-  it('uses classnames from stylesheet and additional classnames in provided CustomCSS object', () => {
+    it('uses classnames from stylesheet in conjunction with classNames listed in CustomCSS `classNames` property', () => {
     const customCSS = ccn.CustomCSS({
       stylesheets: [stylesheet1],
       classNames: { Component: ['another-class-name'] }
@@ -30,7 +32,7 @@ describe('`classNames` function', () => {
     expect(classNames('Component')).toBe('hashed-component-name another-class-name')
   })
 
-  it("doesn't use stylesheets from first CustomCSS object if the second CustomCSS object passed in has the `unstyled` property set to `true`", () => {
+    it("ignores previous stylesheets if a subsequent CustomCSS object's `unstyled` property is `true`", () => {
     const customCSS1 = ccn.CustomCSS({ stylesheets: [stylesheet1] })
     const customCSS2 = ccn.CustomCSS({ unstyled: true })
     
@@ -38,7 +40,7 @@ describe('`classNames` function', () => {
     expect(classNames('Component')).toBe('')
   })
 
-  it("does use stylesheets from second CustomCSS object even if the second CustomCSS object's `unstyled` property is set to `true`", () => {
+    it('uses stylesheets in subsequent CustomCSS objects (even if subsequent object has `unstyled` set to `true`)', () => {
     const customCSS1 = ccn.CustomCSS({ stylesheets: [stylesheet1] })
     const customCSS2 = ccn.CustomCSS({ unstyled: true, stylesheets: [stylesheet2] })
     
@@ -46,12 +48,14 @@ describe('`classNames` function', () => {
     expect(classNames('Block')).toBe('hashed-block-name')
   })
 
-  it("doesn't continue to use stylesheets from first CustomCSS object if second CustomCSS object uses stylesheets and has it's `unstyled` property set to `true`", () => {
+    it('can use more than one stylesheet', () => {
      const customCSS1 = ccn.CustomCSS({ stylesheets: [stylesheet1] })
-    const customCSS2 = ccn.CustomCSS({ unstyled: true, stylesheets: [stylesheet2] })
+      const customCSS2 = ccn.CustomCSS({ stylesheets: [stylesheet2] })
     
     const { classNames } = ccn.use(customCSS1, customCSS2)
-    expect(classNames('Component')).toBe('')
+      expect(classNames('Block')).toBe('hashed-block-name')
+      expect(classNames("Component")).toBe('hashed-component-name')
+    })
   })
 })
 
