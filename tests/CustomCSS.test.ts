@@ -12,6 +12,11 @@ const stylesheet2 = {
   Block__child: 'hashed-child_element-name'
 }
 
+/* 
+  The CustomCSS object is meant to hold information about how to style a component.
+
+  It requires a reliable interface, so that it can be easily merged with other CustomCSS objects when a user decides to override a component's styling.
+*/
 describe('CustomCSS constructor', () => {
   test('Creates expected object with no arguments', () => {
     const customCSS: CustomCSS = ccn.CustomCSS()

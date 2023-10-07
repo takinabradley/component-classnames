@@ -12,6 +12,9 @@ const stylesheet2 = {
   Block__child: 'hashed-child_element-name'
 }
 
+/* 
+  The `classNames` function should use information from the current CustomCSS objects to correctly apply desired classNames to elements in a convenient way.
+*/
 describe('`classNames` function', () => {
   describe('uses CSS modules as expected', () => {
     it('uses correct classname from stylesheet', () => {
