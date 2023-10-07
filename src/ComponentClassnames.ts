@@ -118,6 +118,15 @@ function mergeCustomCSS(...customCSSObjs: CustomCSS[]): CustomCSS {
 
   }, CustomCSS())
 }
+
+function getClassNamesFromStylesheets(customCSS: CustomCSS, elementName: string) {
+  const classNames: string[] = []
+  customCSS.stylesheets.forEach(stylesheet => {
+      if(stylesheet[elementName]) classNames.push(stylesheet[elementName])
+  })
+  return classNames
+}
+
 function CustomCSS(config?: CustomCSSConfig): CustomCSS {
   if (!config) return { unstyled: false, stylesheets: [], classNames: {}, styles: {}, modifiers: {} }
 
@@ -142,4 +151,53 @@ function CustomCSS(config?: CustomCSSConfig): CustomCSS {
     get styles() { return styles },
     get modifiers() {return modifiers}
   } */
+}
+
+function use(...customCSSObjs: CustomCSS[]) {
+  const customCSS = mergeCustomCSS(...customCSSObjs)
+
+  const unstyled = () => customCSS.unstyled
+
+  // OLD: grabs everything from classNames array
+  // const classNames = (componentName: string): string => cnDedupe(customCSS.classNames[componentName])
+
+  // NEW: checks stylesheets for classNames, then adds any additional classnames from classNames array
+  const classNames = (elementName: string): string => {
+    const cssModuleNames: string[] = getClassNamesFromStylesheets(customCSS, elementName)
+    const classNameNames = customCSS.classNames[elementName] || []
+    const allNames = cnDedupe([...cssModuleNames, ...classNameNames])
+    return allNames
+  }
+
+  
+  const styles = (componentName: string): CSSProperties => customCSS.styles[componentName] || {}
+
+  // FIXME, SOMEHOW: this won't grab modifications from a CSS module properly
+  // const modifiers = (componentName: string) => customCSS.modifiers[componentName].map(mod => `${componentName}--${mod}`)
+
+  // Fixed? -- maybe add this functionality directly to the 'classNames' function, so no conditional logic is actually needed in a component to utilize modifiers?
+  const modifiers = (elementName: string): string => {
+    return cnDedupe(
+      // if nothing is found on the stylesheets, it might be nice for it to check 'classNames' for a modifier
+      customCSS.modifiers[elementName].map(mod =>
+        getClassNamesFromStylesheets(customCSS, `${elementName}--${mod}`)
+      )
+    )
+  }
+
+  return {
+    unstyled, classNames, styles, modifiers
+  }
+}
+
+function fromStylesheets(...stylesheets: CSSModuleClasses[]): CustomCSS {
+  return CustomCSS({stylesheets: stylesheets})
+}
+
+// class customcss with static methods?
+
+export default {
+  CustomCSS,
+  fromStylesheets,
+  use
 }
