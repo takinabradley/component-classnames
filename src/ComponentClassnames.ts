@@ -2,8 +2,17 @@ import type { CSSProperties } from 'react'
 import cnDedupe from 'classnames/dedupe'
 import type classNames from 'classnames/dedupe'
 
+
+/* 
+  CustomCSS Factory.
+
+  Apparently it's hard to export a function and type of the same name from a 
+  file with TS, so this code now sits here.
+*/
+
+
 // I want this to be the main object type I'm working with
-interface CustomCSS {
+export type CustomCSS = {
   unstyled: boolean // should unstyle a component and allow completely custom styling
 
 /*   STYLESHEETS:
@@ -47,13 +56,45 @@ interface CSSPropertiesMap {
   [key: string]: CSSProperties
 }
 
-interface CustomCSSConfig {
+export interface CustomCSSConfig {
   unstyled?: boolean
   stylesheets?: CSSModuleClasses[]
   classNames?: ClassNameMap
   styles?: CSSPropertiesMap
   modifiers?: ModifiersMap
 }
+
+function CustomCSS(config?: CustomCSSConfig): CustomCSS {
+  if (!config) return { unstyled: false, stylesheets: [], classNames: {}, styles: {}, modifiers: {} }
+
+  return {
+    unstyled: config.unstyled || false,
+    stylesheets: config.stylesheets || [],
+    classNames: config.classNames || {},
+    styles: config.styles || {},
+    modifiers: config.modifiers || {}
+  }
+
+  // use in the future to ensure nothing gets modified? Might make merging harder..
+  /* const unstyled = config?.unstyled || false
+  const stylesheets = config?.stylesheets || []
+  const classNames = config?.classNames || {}
+  const styles = config?.styles || {}
+  const modifiers = config?.modifiers || {}
+  return {
+    get unstyled() { return unstyled },
+    get stylesheets() { return stylesheets },
+    get classNames() { return classNames },
+    get styles() { return styles },
+    get modifiers() {return modifiers}
+  } */
+}
+
+
+/*
+  CustomCSS merge utilities
+*/
+
 
 function mergeClassNames(customCSS1: CustomCSS, customCSS2: CustomCSS): ClassNameMap {
   const mergedClassNames: ClassNameMap = {}
@@ -119,38 +160,18 @@ function mergeCustomCSS(...customCSSObjs: CustomCSS[]): CustomCSS {
   }, CustomCSS())
 }
 
+
+/*
+  Core 'use' function to merge and use information from CustomCSS objects
+*/
+
+
 function getClassNamesFromStylesheets(customCSS: CustomCSS, elementName: string) {
   const classNames: string[] = []
   customCSS.stylesheets.forEach(stylesheet => {
       if(stylesheet[elementName]) classNames.push(stylesheet[elementName])
   })
   return classNames
-}
-
-function CustomCSS(config?: CustomCSSConfig): CustomCSS {
-  if (!config) return { unstyled: false, stylesheets: [], classNames: {}, styles: {}, modifiers: {} }
-
-  return {
-    unstyled: config.unstyled || false,
-    stylesheets: config.stylesheets || [],
-    classNames: config.classNames || {},
-    styles: config.styles || {},
-    modifiers: config.modifiers || {}
-  }
-
-  // use in the future to ensure nothing gets modified? Might make merging harder..
-  /* const unstyled = config?.unstyled || false
-  const stylesheets = config?.stylesheets || []
-  const classNames = config?.classNames || {}
-  const styles = config?.styles || {}
-  const modifiers = config?.modifiers || {}
-  return {
-    get unstyled() { return unstyled },
-    get stylesheets() { return stylesheets },
-    get classNames() { return classNames },
-    get styles() { return styles },
-    get modifiers() {return modifiers}
-  } */
 }
 
 function use(...customCSSObjs: CustomCSS[]) {
@@ -190,14 +211,13 @@ function use(...customCSSObjs: CustomCSS[]) {
   }
 }
 
-function fromStylesheets(...stylesheets: CSSModuleClasses[]): CustomCSS {
+/* function fromStylesheets(...stylesheets: CSSModuleClasses[]): CustomCSS {
   return CustomCSS({stylesheets: stylesheets})
-}
+} */
 
 // class customcss with static methods?
 
 export default {
   CustomCSS,
-  fromStylesheets,
   use
 }
