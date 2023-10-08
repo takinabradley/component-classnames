@@ -40,7 +40,7 @@ interface ModifiersMap {
 }
 
 interface ClassNameMap {
-  [key: string]: classNames.ArgumentArray | undefined// | CustomCSS ? -- allow nesting? Or have a dedicated property for that? | 
+  [key: string]: classNames.ArgumentArray // | CustomCSS ? -- allow nesting? Or have a dedicated property for that? | 
 }
 
 interface CSSPropertiesMap {
@@ -88,30 +88,31 @@ function CustomCSS(config?: CustomCSSConfig): CustomCSS {
 function mergeClassNames(customCSS1: CustomCSS, customCSS2: CustomCSS): ClassNameMap {
   const mergedClassNames: ClassNameMap = {}
   for (const key in customCSS2.classNames) {
-    // IMPROVEMENT?: could probably dedupe this and not rely on cnDedupe....?
     const originalClassNames = customCSS1.classNames[key] || []
-    const newClassNames = customCSS2.classNames[key] || []
+    const newClassNames = customCSS2.classNames[key]
     mergedClassNames[key] = [...originalClassNames, ...newClassNames]
   }
   return {...customCSS1.classNames, ...mergedClassNames}
 }
 
 function mergeStyles(customCSS1: CustomCSS, customCSS2: CustomCSS): CSSPropertiesMap {
-  const newStyles: CSSPropertiesMap = {}
+  const mergedStyles: CSSPropertiesMap = {}
   for (const key in customCSS2.styles) {
-    newStyles[key] = { ...customCSS1.styles[key], ...customCSS2.styles[key] }
+    const oldStyles = customCSS1.styles[key] || {}
+    const newStyles = customCSS2.styles[key]
+    mergedStyles[key] = { ...oldStyles, ...newStyles }
   }
-  return newStyles
+  return {...customCSS1.styles, ...mergedStyles}
 }
 
 function mergeModifiers(customCSS1: CustomCSS, customCSS2: CustomCSS): ModifiersMap {
   const mergedModifiers: ModifiersMap = {}
   for (const key in customCSS2.modifiers) {
     const originalModifiers = customCSS1.modifiers[key] || []
-    const newModifiers = customCSS2.modifiers[key] || []
+    const newModifiers = customCSS2.modifiers[key]
     mergedModifiers[key] = [...originalModifiers, ...newModifiers]
   }
-  return mergedModifiers
+  return {...customCSS1.modifiers, ...mergedModifiers}
 }
 
 function mergeCustomCSS(...customCSSObjs: CustomCSS[]): CustomCSS {
