@@ -17,7 +17,8 @@ It may provide a bottom-up way of styling for a reusable components. A component
 # Step 1: Applying default styles
 
 component-classnames uses a `CustomCSS` object as the primary way to communicate style information to components.
-Ideally, default styles should primarily be applied via class names, though it is not required.
+The easiest way to use component-classnames is via CSS modules, but it's not required.
+
 A `CustomCSS` object looks like the following:
 
 ```ts
@@ -30,22 +31,19 @@ interface CustomCSS {
 }
 
 const css: CustomCSS = {
-  unstyled: false, // is used to tell a component whether to use default styles or not
-
-  stylesheets: [/*list of CSS module imports*/]
-
+  // is used to tell a component whether to use extend from default styles or not
+  unstyled: false,
+  stylesheets: [/*list of CSS module imports to use*/]
   // used to apply classnames to a component and/or it's children
   classNames: {
     RootComponent: ["a-class-to-apply"],
     childElement: ["another-class-to-apply"],
   },
-
   // used to apply raw styles to a component and/or it's children
   styles: {
     RootComponent: {backgroundColor: 'gainsBoro', padding: '1em'},
     childElement: {color: 'rebeccapurple'}
   }
-
   // used to apply general modifiers to a component and/or it's children
   modifiers: {
     RootComponent: ['red', 'column-layout']
@@ -53,22 +51,23 @@ const css: CustomCSS = {
 };
 ```
 
-component-classnames can accept CSS module files, and apply class names from them
-automatically.
+component-classnames can easily accept and apply classNames from CSS modules.
 
 ```js
 import cssModule from "./Component.module.css";
 import ccn from "./component-classnames";
 
-// use the CustomCSS constructor to pass in stylesheets.
+// pass stylesheets into CustomCSS constructor
 const defaultStyle = ccn.CustomCSS({ stylesheets: [cssModule] });
 
 function Component() {
   // use of the library is idiomatic to React hooks
-  const { unstyled, classNames, styles, modifiers } = ccn.use(defaultStyle);
+  // Just pass in a default CustomCSS object to the `use` function to use it.
+  const { unstyled, classNames, styles } = ccn.use(defaultStyle);
 
   return (
-    /* use 'classNames' helper to automatically apply classnames from the stylesheet, and more */
+    /* use 'classNames' helper function to apply classnames from the stylesheet, and more */
+    /* The below elements will get the hashed classnames from the CSS module */
     <div className={classNames("ComponentName")}>
       <span className={classNames("ChildName")}>I'm a child!</span>
     </div>
@@ -78,25 +77,29 @@ function Component() {
 
 # Step 2: Modifiers for easy layout changes
 
-Modifiers are a great way to take chunks of reusable markup, and apply styling to them. For this reason, component-classnames has a built-in method of applying modifiers to components. This idea was taken from the BEM naming convention. If you're not familiar with BEM, read about it here!
+Modifiers are a great way to take chunks of reusable markup, and apply alternative styling to them. component-classnames has a built-in method of applying modifiers to elements. This idea was taken from the BEM naming convention. If you're not familiar with BEM, read about it here!
 
-Consider the following SCSS file:
+Consider the following CSS file:
 
-```scss
-// Component.module.css
+```css
+/* Component.module.css */
 .Block {
   display: flex;
-
-  .child {
-    // other styling...
-  }
+  padding: 1em;
+  background-color: gainsboro;
 }
 
-.Block--modified {
-  // changes the layout out the children
+.child {
+  color: rebeccapurple;
+}
+
+.Block--columns {
+  /* Can apply modifiers to alter the layout, but otherwise keep normal 'Block' styling */
   flex-direction: column;
 }
 ```
+
+Now, by creating a component that uses this CSS file and accepts a CustomCSS object, we can apply this modifier whenever we want from outside the component
 
 ```js
 import cssModule from "./Component.module.css";
@@ -106,25 +109,22 @@ import ccn from "./component-classnames";
 const defaultStyle = ccn.CustomCSS({ stylesheets: [cssModule] });
 
 function Component({customCSS = CustomCSS(), ...props}) {
-  // the 'use' function automatically merges CustomCSS objects passed in with the default one
-  // the behavior depends based on the `unstyled` property of the object passed in.
-  const { unstyled, classNames, styles, modifiers } = ccn.use(defaultStyle, customCSS);
+  /* the 'use' function merges CustomCSS objects passed in after the first one by default */
+  const { unstyled, classNames, styles } = ccn.use(defaultStyle, customCSS);
 
   return (
-    // className becomes "Block Block--modified"
-    <div className={classNames("Block") + ` ${modifiers('Block')}`}>
-      <span className={classNames("child") + ` ${modifiers('child')}`}>I'm a child!</span>
+    /* "Block" element's className becomes `${cssModule.Block} ${cssModule['Block--modified']}`, due to props passed in from App (below) */
+    <div className={classNames("Block")}>
+      <span className={classNames("child")}>I'm a child!</span>
     </div>
   );
 }
 
 function App() {
   return (
-    // The `Block` element's className becomes "Block Block--modified"
-    // The `child` element's className remains untouched, as no modifiers were specified for it.
-    // Modifiers are a great way to quickly modifify a component's styles for specific needs, as all the require are adding a modifier class in the stylesheet
+    // just create a CustomCSS object that specifies a modifier, and the `classNames` function in the component will do the rest!
     <Component
-      customCSS={CustomCSS( {modifiers: {Block: 'modified'}} )}
+      customCSS={CustomCSS( {modifiers: {Block: 'columns'}} )}
     >
   )
 }
@@ -134,7 +134,7 @@ function App() {
 
 New classNames and styles can easily be applied via a CustomCSS object with `stylesheet`, `classNames`, or `styles` props.
 
-Let's say you wanted to add a simple inline style to your reusable component- you can do so with `styles`
+Let's say you wanted to add a simple inline style to an elmeent in your reusable component- you can do so with `styles`
 
 ```js
 function App() {
@@ -151,7 +151,7 @@ function App() {
 }
 ```
 
-Or, if you're into tailwind-like utility classes, or have a global CSS file with custom utility classes, you can apply custom `classNames`:
+Or, if you're into tailwind-like utility classes, or have a global CSS file with custom utility classes, you can apply additional custom `classNames`:
 
 ```js
 function App() {
@@ -176,14 +176,13 @@ You can even apply styles from another CSS module via the `stylesheet` property:
 /* ... App component styling up here somewhere ...*/
 
 // Start of reusable component restyling:
-.Block {
+.ComponentName {
   display: none;
 }
 ```
 
 ```jsx
 import cssModule from './App.module.css'
-
 
 function App() {
   return (
@@ -192,7 +191,7 @@ function App() {
         Will apply classes matching the "Block" name to the "Block" element from
         App's css module.
       */}
-      <Component
+      <ReusableComponent
         customCSS={CustomCSS({stylesheets: [cssModule]})}
       >
 
@@ -206,7 +205,7 @@ function App() {
         css module instead.
 
         Using the `unstyled` flag tells the `use` function that it should not
-        merge the new CustomCSS object with the default one, allowing you
+        merge the new CustomCSS object with the preceding one, allowing you
         freedom to restyle without clashes.
       */}
       <Component
@@ -214,7 +213,7 @@ function App() {
       >
 
       {/*
-        You may also simply apply additional styles from `App.module.css` to an
+        You may also explicitly apply specific styles from `App.module.css` to an
         element via `classNames`
       */}
       <Component
@@ -242,22 +241,21 @@ Ex:
 function App() {
   return (
     <div className="App">
-
       {/*
-        In this case, the `modifiers` function inside of `Component` will
-        search the `classNames` property for `Block--red`, and apply the
-        styles it finds.
+        The `classNames` function inside of `Component` will also search the
+        `classNames` property for `Block--red`, and apply the classNames it
+        finds.
       */}
       <Component
         customCSS={CustomCSS({
-          unstyled: true,
+          unstyled: true, // ignores all default styles on the component
           classNames: {
             Block: [/* classNames to apply to block */],
             child: [/* classNames to apply to child */],
             Block--red: [/*classNames to apply to a modified block*/]
           },
           modifiers: {
-            Block: ['red']
+            Block: ['red'] // will apply classNames for 'Block--red' defined above
           }
         })}
       >
@@ -269,9 +267,7 @@ function App() {
 
 # Step 5: Dynamic styling
 
-component-classNames uses the deduped version of the `classnames` package under
-the hood. That means you can pass in anything via an array that `classNames`
-This means you can apply some styles dynamically from outside a component:
+component-classNames uses the deduped version of the `classnames` package under the hood. That means you can pass in anything via an array that `classNames` supports. This allows you to apply some classNames dynamically from outside a component:
 
 ```js
 function App() {
@@ -299,7 +295,7 @@ function App() {
 }
 ```
 
-An advantage of component-classnames is that you can define what an 'selected'
+An advantage of component-classnames is that you can also define what an 'selected'
 class looks like to some component from an outside, even if the style is applied
 based on some internal state:
 
@@ -315,11 +311,7 @@ const defaultStyle = ccn.CustomCSS({ stylesheets: [cssModule] });
 
 function Component({ renderList = [], customCSS = CustomCSS(), ...props }) {
   const [selected, setSelected] = useState(null);
-
-  const { unstyled, classNames, styles, modifiers } = ccn.use(
-    defaultStyle,
-    customCSS
-  );
+  const {styles} = ccn.use(defaultStyle, customCSS);
 
   return (
     <div className={classNames("Block")}>
@@ -329,17 +321,33 @@ function Component({ renderList = [], customCSS = CustomCSS(), ...props }) {
             key={item.id}
             {/*could use styles: */}
             styles={selected === item.id && styles("selected")}
-
-            {/*or classnames: */}
-            className={selected === item.id && classNames("selected")}
             onClick={() => setSelected(item.id)}
           >
-            {item}
+            {item.text}
           </li>
         ))}
       </ul>
     </div>
   );
+}
+
+function App() {
+  const data = [
+    {id: 0, text: 'a'},
+    {id: 1, text: 'b'},
+    {id: 2, text: 'c'},
+    {id: 3, text: 'd'},
+  ]
+  return (
+    <div className='App'>
+      <Component renderList={data} customCSS={CustomCSS({
+        // use styles to apply inline styles directly
+        styles: {
+          selected: {backgroundColor: 'gray'}
+        }
+      })}>
+    </div>
+  )
 }
 ```
 
@@ -362,7 +370,7 @@ const defaultStyle = ccn.CustomCSS({
   }
 });
 function Component({ customCSS = CustomCSS(), ...props }) {
-  const { unstyled, classNames, styles, modifiers, childComponents } = ccn.use(
+  const { unstyled, classNames, styles, childComponents } = ccn.use(
     defaultStyle,
     customCSS
   );
@@ -372,7 +380,7 @@ function Component({ customCSS = CustomCSS(), ...props }) {
       <div className={classNames("Component__child")} />
 
       {/*
-        This function call would:
+        This function call might:
         1. Pass a consumer-defined CustomCSS object to AnotherComponent if the consuming component's `CustomCSS.childComponents` property specifies one
         2. Pass a 'default' CustomCSS object if it does not
         3. Pass a CustomCSS object with the `unstyled` property set to `true` if the consuming component's `unstyled` property is set to true. (maybe, purely using the CustomCSS object may afford more granularity. May depend on feedback. Ideally, to me, `unstyled: true` should wipe every style in a component)
