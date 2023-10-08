@@ -13,31 +13,22 @@ import type classNames from 'classnames/dedupe'
 
 // I want this to be the main object type I'm working with
 export type CustomCSS = {
-  unstyled: boolean // should unstyle a component and allow completely custom styling
-
-/*   STYLESHEETS:
-        USTYLED TRUE -> COPY ONLY PROVIDED STYLESHEETS FROM CURRENT
-        USTYLED FALSE -> KEEP BOTH
-
-        FOR CLASSNAMES, LOOK UP ELEMENT NAME ON PROVIDED STYLESHEETS FIRST, IF IT EXISTS USE IT, THEN ADD OTHER CLASSNAMES
-        FOR MODIFIERS, LOOK UP ELEMENT NAME PROVIDED ON STYLESHEETS FIRST, IF IT EXISTS, USE MODIFIED VERSION OF IT.  */
-  stylesheets: CSSModuleClasses[]
+  // a flag used to ignore previous CustomCSS properties on a component
+  unstyled: boolean
 
   /*
-    unstyled: true -- should use only classnames given
-    unstyled: false -- should extend default classnames
+    When searching for a className to apply to an element, this utility should
+    search all stylesheets and the `classNames` property that matches it's name
   */
+  stylesheets: CSSModuleClasses[]
   classNames: ClassNameMap
 
-  /*
-    unstyled: true -- should use only styles given
-    unstyled: false -- should extend default styles
-  */
+  /* Used to apply inline styles */
   styles: CSSPropertiesMap
 
   /*
-    unstyled: true -- should do nothing(? May have already changed)
-    unstyled: false -- should add modifiers to the block-level (or any?) element
+    Modifiers should also search the stylesheets and classNames property for 
+    maximum flexibility
   */
   modifiers: ModifiersMap
 }
@@ -97,13 +88,12 @@ function CustomCSS(config?: CustomCSSConfig): CustomCSS {
 function mergeClassNames(customCSS1: CustomCSS, customCSS2: CustomCSS): ClassNameMap {
   const mergedClassNames: ClassNameMap = {}
   for (const key in customCSS2.classNames) {
-    const thing = customCSS2.classNames[key]
     // IMPROVEMENT?: could probably dedupe this and not rely on cnDedupe....?
     const originalClassNames = customCSS1.classNames[key] || []
     const newClassNames = customCSS2.classNames[key] || []
     mergedClassNames[key] = [...originalClassNames, ...newClassNames]
   }
-  return mergedClassNames
+  return {...customCSS1.classNames, ...mergedClassNames}
 }
 
 function mergeStyles(customCSS1: CustomCSS, customCSS2: CustomCSS): CSSPropertiesMap {
