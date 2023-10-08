@@ -95,6 +95,38 @@ describe('`classNames` function', () => {
       const { classNames } = ccn.use(customCSS1)
       expect(classNames('Component')).toBe('hashed-component-name')
     })
+
+    it('applies all modifiers correctly from stylesheets and classNames property', () => {
+      const customCSS1 = ccn.CustomCSS({
+        stylesheets: [stylesheet1],
+        classNames: {
+          'Component__child--mod': ['another-mod']
+        },
+        modifiers: {
+          'Component__child': ['mod'],
+        }
+      })
+
+      const { classNames } = ccn.use(customCSS1)
+      expect(classNames('Component__child')).toBe('hashed-child_component-name MODDED! another-mod')
+    })
+
+    it("doesn't break when subsequent CustomCSS objects remove modifiers", () => {
+      const customCSS1 = ccn.CustomCSS({
+        stylesheets: [stylesheet1],
+        classNames: {
+          'Component__child--mod': ['another-mod']
+        },
+        modifiers: {
+          'Component__child': ['mod'],
+        }
+      })
+
+      const customCSS2 = ccn.CustomCSS({ unstyled: true, classNames: {Component__child: ['overwritten']} })
+      
+      const { classNames } = ccn.use(customCSS1, customCSS2)
+      expect(classNames('Component__child')).toBe('overwritten')
+    })
   })
 })
 
