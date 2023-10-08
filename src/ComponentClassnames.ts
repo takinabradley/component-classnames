@@ -212,25 +212,19 @@ function use(...customCSSObjs: CustomCSS[]) {
   // const modifiers = (componentName: string) => customCSS.modifiers[componentName].map(mod => `${componentName}--${mod}`)
 
   // Fixed? -- maybe add this functionality directly to the 'classNames' function, so no conditional logic is actually needed in a component to utilize modifiers?
-  const modifiers = (elementName: string): string => {
+  /* const modifiers = (elementName: string): string => {
     return cnDedupe(
       // if nothing is found on the stylesheets, it might be nice for it to check 'classNames' for a modifier
       customCSS.modifiers[elementName].map(mod =>
         getClassNamesFromStylesheets(customCSS, `${elementName}--${mod}`)
       )
     )
-  }
+  } */
 
   return {
-    unstyled, classNames, styles, modifiers
+    unstyled, classNames, styles
   }
 }
-
-/* function fromStylesheets(...stylesheets: CSSModuleClasses[]): CustomCSS {
-  return CustomCSS({stylesheets: stylesheets})
-} */
-
-// class customcss with static methods?
 
 export default {
   CustomCSS,

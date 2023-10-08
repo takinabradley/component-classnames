@@ -13,7 +13,6 @@ describe('`use` function', () => {
 
     expect(typeof ccnController.classNames).toBe('function')
     expect(typeof ccnController.styles).toBe('function')
-    expect(typeof ccnController.modifiers).toBe('function')
     expect(typeof ccnController.unstyled).toBe('function')
   })
 })
