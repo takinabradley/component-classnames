@@ -3,6 +3,11 @@ import mergeCustomCSS from "./mergeCustomCSS"
 import type { CSSProperties, CustomCSSConfig } from "./CustomCSS"
 import cnDedupe from 'classnames/dedupe'
 
+interface CCNController {
+  classNames: (componentName: string) => string
+  styles: (componentName: string) => CSSProperties,
+}
+
 function getClassNamesFromStylesheets(customCSS: CustomCSS, elementName: string) {
   const classNames: string[] = []
   customCSS.stylesheets.forEach(stylesheet => {
@@ -29,7 +34,7 @@ function getClassNamesFromModifiers(customCSS: CustomCSS, elementName: string): 
   Core 'use' function to merge and use information from CustomCSS objects
 */
 
-function use(...configs: CustomCSSConfig[]) {
+function use(...configs: CustomCSSConfig[]): CCNController {
   let mergedCustomCSS: CustomCSS
   if (configs.length === 0) {
     mergedCustomCSS = new CustomCSS()
