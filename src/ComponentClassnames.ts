@@ -51,18 +51,13 @@ function use(...configs: CustomCSSConfig[]) {
   const styles = (componentName: string): CSSProperties => mergedCustomCSS.styles[componentName] || {}
 
   return {
-    unstyled,
     classNames,
     styles,
-    mergeCustomCSS
   }
 }
 
 export type { CustomCSS }
 
 export default {
-  CustomCSS: function (customCSSConfig?: CustomCSSConfig): CustomCSS {
-    return new CustomCSS(customCSSConfig)
-  },
   use
 }
