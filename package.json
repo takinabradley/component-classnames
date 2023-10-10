@@ -1,18 +1,35 @@
 {
   "name": "component-classnames",
-  "module": "index.ts",
+  "module": "out/ComponentClassnames.js",
   "type": "module",
   "scripts": {
-    "build": "bun build src/ComponentClassnames.ts --outdir=out/ --target=node"
+    "build": "bun build src/ComponentClassnames.ts --outdir=out/ --target=node && bunx tsc"
   },
   "devDependencies": {
-    "@types/react": "^18.2.25",
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "@types/react": "^18.2.25"
   },
   "dependencies": {
     "classnames": "^2.3.2"
+  },
+  "description": "`component-classnames` is a small library meant to aid in creating reusable React components with flexible stylings.",
+  "version": "1.0.0",
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [
+    "react",
+    "css",
+    "classnames"
+  ],
+  "author": "takinabradley",
+  "license": "ISC",
+  "types": "./out/ComponentClassnames.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/takinabradley/component-classnames.git"
   }
 }
