@@ -43,8 +43,6 @@ function use(...configs: CustomCSSConfig[]): CCNController {
     mergedCustomCSS = mergeCustomCSS(...customCSSObjs)
   }
 
-  const unstyled = () => mergedCustomCSS.unstyled
-
   const classNames = (elementName: string): string => {
     const cssModuleNames: string[] = getClassNamesFromStylesheets(mergedCustomCSS, elementName)
     const classNameNames = mergedCustomCSS.classNames[elementName] || []
