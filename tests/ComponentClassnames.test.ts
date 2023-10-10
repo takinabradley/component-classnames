@@ -418,8 +418,50 @@ describe("`classNames` helper", () => {
   })
 })
 
-describe.todo('`styles` helper', () => {
-  it.todo('applies inline styles for specified elementName', () => {
-
+describe('`styles` helper', () => {
+  it('applies inline styles for specified elementName', () => {
+    const { styles } = ccn.use({ styles: { Block: { display: 'flex' } } })
+    expect(styles('Block')).toStrictEqual({ display: 'flex' })
   })
+
+  it('applies inline styles from multiple `styles` configuration properties', () => {
+    const { styles } = ccn.use(
+      { styles: { Block: { display: 'flex' } } },
+      { styles: { Block: { flexDirection: 'row' } } },
+    )
+    expect(styles('Block')).toStrictEqual({ display: 'flex', flexDirection: 'row'})
+  })
+
+  it('merges styles from multiple `styles` configuration properties as expected', () => {
+    /* Most recent styles should overwrite previous ones */
+    const { styles } = ccn.use(
+      { styles: { Block: { display: 'flex' } } },
+      { styles: { Block: { flexDirection: 'row' } } },
+      { styles: { Block: { flexDirection: 'column', backgroundColor: 'gray' } } },
+    )
+
+    expect(styles('Block')).toStrictEqual({ display: 'flex', flexDirection: 'column', backgroundColor: 'gray'})
+  })
+
+  it('only uses styles from last config object that specified `unstyled: true` and onwards (1)', () => {
+    const { styles } = ccn.use(
+      { styles: { Block: { display: 'flex' } } },
+      { styles: { Block: { flexDirection: 'row' } } },
+      {
+        unstyled: true,
+        styles: { Block: { flexDirection: 'column', backgroundColor: 'gray' } }
+      },
+      {
+        styles: { Block: {color: 'rebeccapurple'} }
+      }
+    )
+
+    expect(styles('Block')).toStrictEqual({ flexDirection: 'column', backgroundColor: 'gray', color: 'rebeccapurple'})
+  })
+
+  it('returns an empty object when there is no styling to be applied', () => {
+    const { styles } = ccn.use()
+    expect(styles('something')).toEqual({})
+  })
+
 })
