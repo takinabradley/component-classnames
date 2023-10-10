@@ -20,5 +20,5 @@
     ],
     "outDir": "out/declarations"
   },
-  "include": ["src/*.ts"]
+  "include": ["src/*.ts", "tests/*.ts"]
 }
