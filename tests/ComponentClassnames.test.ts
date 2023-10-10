@@ -1,5 +1,4 @@
 import { test, describe, it, expect } from 'bun:test'
-import bunTest from 'bun:test'
 import ccn from '../src/ComponentClassnames.ts'
 
 const stylesheet1 = {
@@ -77,7 +76,7 @@ describe('`use` function', () => {
   })
 })
 
-describe("`classNames` function", () => {
+describe("`classNames` helper", () => {
   describe('uses provided stylesheets as expected', () => {
     it('applies class names from a provided stylesheet', () => {
       const { classNames } = ccn.use({ stylesheets: [stylesheet1] })
@@ -325,11 +324,102 @@ describe("`classNames` function", () => {
       expect(classNames('Block')).toBe('Block Block--modified')
     })
 
+    it('applies modifiers from multiple className properties', () => {
+      const { classNames } = ccn.use(
+        {
+          classNames: {
+            Block: ['Block'],
+            'Block--modified': ['Block--modified']
+          },
+          modifiers: {
+            Block: ['modified']
+          }
+        },
+        {
+          classNames: {
+            'Block--column': ['Block--column']
+          },
+          modifiers: {
+            Block: ['column']
+          }
+        }
+      )
+
+      expect(classNames('Block')).toBe('Block Block--modified Block--column')
+    })
+
+    it('only uses modifiers from the last argument that specified an `unstyled: true` property and onwards', () => {
+      const { classNames } = ccn.use(
+        {
+          classNames: {
+            Block: ['Block'],
+            'Block--modified': ['Block--modified']
+          },
+          modifiers: {
+            Block: ['modified']
+          }
+        },
+        {
+          unstyled: true,
+          classNames: {
+            Block: ['Block'],
+            'Block--column': ['Block--column']
+          },
+          modifiers: {
+            Block: ['column']
+          }
+        }
+      )
+
+      expect(classNames('Block')).toBe('Block Block--column')
+    })
+
+    it('dedupes modifiers from classNames properties', () => {
+      const { classNames } = ccn.use(
+        {
+          classNames: {
+            Block: ['Block'],
+            'Block--modified': ['Block--modified']
+          },
+          modifiers: {
+            Block: ['modified']
+          }
+        },
+        {
+          modifiers: {
+            Block: ['modified', 'modified']
+          }
+        }
+      )
+
+      expect(classNames('Block')).toBe('Block Block--modified')
+    })
+
+    it('dedupes class names from classNames properties', () => {
+      const { classNames } = ccn.use(
+        { classNames: { Block: ['Block', 'Block'] } },
+        { classNames: { Block: ['Block', { Block: true }] } },
+        {
+          classNames: {
+            Block:
+              ['Block',
+                ['Block',
+                  ['Block',
+                    [{ Block: true }]
+                  ]
+                ]
+              ]
+          }
+        }
+      )
+
+      expect(classNames('Block')).toBe('Block')
+    })
+  })
+})
+
+describe.todo('`styles` helper', () => {
+  it.todo('applies inline styles for specified elementName', () => {
 
   })
-
-  
-
-
-
 })
