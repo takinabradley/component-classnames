@@ -1,5 +1,5 @@
 {
-  "name": "component-classnames",
+  "name": "@takinabradley/component-classnames",
   "module": "out/ComponentClassnames.js",
   "type": "module",
   "scripts": {
@@ -30,6 +30,11 @@
   "types": "./out/ComponentClassnames.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/takinabradley/component-classnames.git"
-  }
+    "url": "git+https://github.com/takinabradley/component-classnames.git"
+  },
+  "bugs": {
+    "url": "https://github.com/takinabradley/component-classnames/issues"
+  },
+  "homepage": "https://github.com/takinabradley/component-classnames#readme",
+  "main": "out/ComponentClassnames.js"
 }
