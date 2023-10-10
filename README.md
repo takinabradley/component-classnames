@@ -311,10 +311,9 @@ function Component({ renderList = [], customCSS = {}, ...props }) {
               Since modifiers are might normally be used to modify from outside the component, you may have to explicitly add a modifier
               Another option could be creating a `listItemSelected` child name, though it's less conventional.
             */}
-            class={classNames('Component__listItem') + selected === item.id ? classNames('Component__listItem--selected') : undefined}
-
+            className={classNames('Component__listItem') + (selected === item.id ? ` ${classNames('Component__listItem--selected')}` : ' ')}
             {/*Apply inline styles to overwrite the selected state*/}
-            styles={selected === item.id && styles("selected")}
+            style={selected === item.id && styles("Component__listItem--selected")}
             onClick={() => setSelected(item.id)}
           >
             {item.text}
@@ -337,7 +336,7 @@ function App() {
       <Component renderList={data} customCSS={CustomCSS({
         // use styles to apply inline styles directly for only selected elements, if you wanted to provide a way to change the selected class
         styles: {
-          selected: {backgroundColor: 'gray'}
+          "Component__listItem--selected": {backgroundColor: 'gray'}
         }
       })}>
     </div>
