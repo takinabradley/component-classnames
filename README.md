@@ -15,7 +15,7 @@ By making the above easy, `component-classnames` hopes to enable the prospect of
 
 ## Applying default styles:
 
-`component-classnames` currently only has one function, named `use`.
+The `component-classnames` module currently only has one function, named `use`.
 Applying default styles is very easy, especially with CSS modules:
 
 ```css
@@ -36,12 +36,13 @@ import cssModule from "./ComponentName.module.css";
 import ccn from "component-classnames";
 
 function Component() {
-  /* You can apply default styles to use by passing a `stylesheets` array to `use`. You can even specify more than one file! */
-  const { classNames } = cnn.use({ stylesheets: [cssModule] });
+  /*  You can apply default styles and class names to use by passing a 
+      `stylesheets` array to `use`. You can even specify more than one file! */
+  const { useName } = cnn.use({ stylesheets: [cssModule] });
 
   return (
-    <div className={classNames("ComponentName")}>
-      <div classname={classNames("Component__childElement")}>
+    <div {...useName("ComponentName")}>
+      <div {...useName("ComponentName__childElement")}>
         I'm this component's child!
       </div>
     </div>
@@ -49,7 +50,9 @@ function Component() {
 }
 ```
 
-`component-classnames` works by giving each element inside a component a unique name. Since you may want to style nested components, it's likely a good idea to use some sort of CSS naming convention. We'd recommend BEM, since it's simple to start using, and `component-classNames` already uses BEM-like syntax to create modifiers for elements (discussed in the next section).
+`component-classnames` works by giving each element inside a component a unique name, and remembering information about how to style that component. When using CSS modules, the name you choose must match a class name in the stylesheet. For this reason, it's a good idea to use some sort of CSS naming convention to give elements in components unique names. BEM is recommended, since it's simple to start using and `component-classNames` already uses BEM-like syntax to create modifiers for elements (discussed in the next section). Consistent, unique naming may also help styling nested components in the future.
+
+The `useName` function simply returns an object with a `className` and `style` property. When using the spread operator (`...`), all that happens is an assignment of those properties to a React element.
 
 If you don't desire to use CSS Modules, `component-classNames` may still be a usable option.
 You may specify default classNames to the `use` function as well, without a stylesheet. This may be useful for applying things like TailWind classes:
@@ -59,8 +62,8 @@ import ccn from "component-classnames";
 
 const defaultStyles = {
   classNames: {
-    ComponentName: ['text-lg', 'font-semibold']
-    ComponentName__childElement: ['bg-sky-500', 'hover:bg-sky-700']
+    Component: ['text-lg', 'font-semibold']
+    Component__child: ['bg-sky-500', 'hover:bg-sky-700']
   }
 }
 
@@ -69,10 +72,10 @@ function Component() {
 
   return (
     // applies string 'text-lg font-semibold' to container className
-    <div className={classNames("ComponentName")}>
+    <div {...useName("Component")}>
 
       {/* applies string 'bg-sky-500 hover:bg-sky-700' to child className*/}
-      <div classname={classNames("Component__childElement")}>
+      <div {...useName("Component__child")}>
         I'm this component's child!
       </div>
     </div>
@@ -81,45 +84,59 @@ function Component() {
 ```
 
 > Note:
-> While you _can_ currently provide a single long string in the classNames array above for applying TailWind classes, instead a single string for each class, it's quite likely your classes will be de-duplicated properly (this may be important when overriding default styling). Furthermore, there is no guarauntee that it continue to work.
-> A good middle-ground solution might be to `.split` a long string by whitespace into an array when passing it into `classNames`.
+> While you _can_ currently provide a single long string in the classNames array above for applying TailWind classes, instead a single string for each class, it's quite likely your classes will not be de-duplicated properly (this may be important when overriding default styling). Furthermore, there is no guarauntee that it continue to work.
+> A good middle-ground solution might be to `.split` a long string by whitespace into an array when passing it into `classNames` to ease in writing many class names.
 
-If you _still_ don't want to work with class names, you can use `component-classnames` to apply default inline-css to components as well. This can be done with the `styles` helper function:
+If you _still_ don't want to work with class names, you can use `component-classnames` to apply default inline-css to components as well.
 
 `component-classNames` uses React's CSSProperties type, so if you use TypeScript, you'll get type-checking and auto-completion in editors like VSCode.
 
 ```js
 const defaultStyles = {
   styles: {
-    ComponentName: {
+    Component: {
       display: "flex",
       padding: "1em",
       backgroundColor: "gainsboro",
     },
-    ComponentName__child: {
+    Component__child: {
       color: "rebeccapurple",
     },
   },
 };
 
 function Component() {
-  const { styles } = cnn.use(defaultStyles);
+  const { useName } = cnn.use(defaultStyles);
 
   return (
     // applies specified styles object to container's `style` property
-    <div style={styles("ComponentName")}>
+    <div {...useName("Component")}>
       {/* applies specified styles object to child's `style` property */}
-      <div style={styles("ComponentName__child")}>
-        I'm this component's child!
-      </div>
+      <div {...useName("Component__child")}>I'm this component's child!</div>
     </div>
   );
 }
 ```
 
+The `use` function also returns two other helper functions named `classNames` and `styles`. They are available just in case you want to apply the `className` and `style` properties of an element separately. They work the same way, except they return a string or a `CSSProperties` object respectively. This can be useful for class names/styles that should be applied conditionally.
+
+A current limitation of `component-classnames` is that it's hard use modifiers to style a component based on some condition (state or props), while maintaining the desired benefits. For this reason, we recommend creating a new class name for when a component gets re-styled based on some condition (in other words, treating it as a unique element of it's block).
+
+```jsx
+// Normal BEM convention:
+<div className={ selected ? 'Component__child Component__child--selected' : 'Component__child'}>
+
+// Recommended convention while using `component-classnames`
+<div {...( selected ? useName('Component__child') : useName('Component_selectedChild'))}>
+```
+
+While this means you may have to duplicate some code in CSS, reusable components are often small. This convention makes it easier for consumers of components to re-style selected and unselected elements as desired, and seems to be the best solution given other alternatives.
+
+When using `component-classnames`, modifiers should be used only as a way for the consumer of a component to modify an element from the outside, and purely for stylistic reasons. More on modifiers below.
+
 ## Modifiers (choosing from a selection of default styles)
 
-`component-classnames` supports a BEM-like naming convention for applying 'modifiers' to your components and their child elements. These modifiers can be especially useful for applying quick layout changes from pre-defined style modifiers. Currently, there is no option to change this convention, but one may be provided in the future.
+`component-classnames` supports the BEM naming convention for applying 'modifiers' to your components and their child elements from the outside. These modifiers can be especially useful for applying quick layout changes from pre-defined style modifiers. Currently, there is no option to change this convention, but one may be provided in the future.
 
 ```css
 /* Component.module.css */
@@ -129,11 +146,12 @@ function Component() {
   background-color: gainsboro;
 }
 
-.Component__childElement {
+.Component__child {
   color: rebeccapurple;
 }
 
 /* A 'columns' modifier is defined here, which can be used to change the layout of the component*/
+/* large layout changes such as this are one of the best use-cases for applying modifiers */
 .Component--column {
   flex-direction: column;
 }
@@ -146,14 +164,12 @@ import cssModule from "./Component.module.css";
 function Component({ customCSS = {} }) {
   // You can modify styles from props by telling the `use` function to use an additional config object
   // The `use` function will merge the two configurations and apply styling based on them.
-  const { classNames } = cnn.use({ stylesheets: [cssModule] }, customCSS);
+  const { useName } = cnn.use({ stylesheets: [cssModule] }, customCSS);
 
   return (
     // The `classNames` function will automatically apply any modifiers passed to the `use` function
-    <div className={classNames("Component")}>
-      <div className={classNames("Component__child")}>
-        I'm this component's child!
-      </div>
+    <div {...useName("Component")}>
+      <div {...useName("Component__child")}>I'm this component's child!</div>
     </div>
   );
 }
@@ -171,10 +187,10 @@ function App() {
         This tells the component to apply the `column` modifier to the element
         using the `Component` name, shifting the layout with ease.
 
-        If a component requires extensive re-styling on multiple pages, you
-        could provide a modifier with the page name in the default styles to
-        quickly modify a component to suit the page's needs, without effecting
-        other pages.
+        If a component requires extensive restyling on one or more pages, you
+        could add a modifier on the container with the page's name to quickly
+        modify a component to suit the page's needs without effecting other
+        pages.
       */}
       <Component customCSS={modifiers: {Component: 'column'}} />
     </div>
@@ -182,9 +198,11 @@ function App() {
 }
 ```
 
-The good news, for those that may be wary using a naming convention, is that `component-classnames` makes using one likely less verbose than one would expect. The `classNames` function will automatically apply modifiers for you based on props, so you may never need to actually specify them yourself inside a component. `component-classnames` encourges you to use modifiers sparingly, as a way for a consumer of your components to make swift modifications to them.
+The good news, for those that may be wary the verbosity of BEM, is that `component-classnames` makes using one likely less verbose than one would expect inside a component.
 
-If you're not using CSS modules, you can still use modifier classes by specifying them in a configuration object that gets passed to `use`:
+The `classNames` function will automatically apply modifiers for you based on props, so you may never need to actually specify them yourself inside a component. `component-classnames` encourges you to use modifiers sparingly, as a way for a consumer of your components to make swift modifications to them.
+
+If you're not using CSS modules, you can still provide modifier classes by specifying them in a configuration object that gets passed to `use`:
 
 ```js
 {
@@ -201,19 +219,16 @@ This modifier can be applied the exact same way through props.
 
 It's easy to extend or overwrite default styles on specific elements in a component through props.
 
-You can apply additional styles to a specific element via the the `styles` config property:
+You can apply additional styles/class names to specific elements via the `classNames` and `styles` config options:
 
 ```jsx
 // Component.jsx
 import cssModule from "./Component.module.css";
 function Component({ customCSS = {} }) {
-  const { classNames, styles } = cnn.use({ stylesheets: [cssModule] }, customCSS);
+  const { useName } = cnn.use({ stylesheets: [cssModule] }, customCSS);
   return (
-    // tell the component to use the `styles` helper for inline styles
-    <div className={classNames("Component") style={styles('Component')}}>
-      <div className={classNames("Component__child")} style={styles('Component__child')}>
-        I'm this component's child!
-      </div>
+    <div {...useName("Component")}>
+      <div {...useName("Component__child")}>I'm this component's child!</div>
     </div>
   );
 }
@@ -224,9 +239,8 @@ function Component({ customCSS = {} }) {
 <Component customCSS={styles: {Component__child: {backgroundColor: 'white'}}}>
 ```
 
-In the same vein, you can apply additional classes to any element by passing them in via props
-
 ```jsx
+// apply additional classes to any element by passing them in via props
 <Component customCSS={classNames: {Component__child: ['some-additional-class'] }}>
 ```
 
@@ -241,7 +255,7 @@ function App() {
 }
 ```
 
-You can actually just pass in `AppStyles` itself as a stylesheet, and if it has class names matching the names of the elements in `Component`, the `classNames` helper will automatically apply those classes as well as the original ones:
+You can actually just pass in `AppStyles` itself as a stylesheet, and if it has class names matching the names of the elements in `Component`, the `useName`/`classNames` helper will automatically apply those classes as well as the original ones:
 
 ```js
 import AppStyles from './App.module.css'
@@ -252,12 +266,14 @@ function App() {
 }
 ```
 
-Conflicting class names from different CSS modules can have unpredictable results, unfortunately. If you're going to do the above, it might be a good idea to set the `unstyled` property of the config object to `true`. This is wipe out all previous styles, and allow you to specify an alternative stylesheet to completely restyle without conflicts:
+Conflicting class names from different CSS modules can have unpredictable results, unfortunately. If you're going to do the above, it might be a good idea to set the `unstyled` property of the config object to `true`. This is wipe out all previous styles, and allow you to specify an alternative stylesheet to completely restyle a component without conflicts:
 
 ```js
+// import a stylesheet that also specified styles for the nested component
 import AppStyles from "./App.module.css";
+
 /*
-You could even write an alternative stylesheet:
+You could also write an alternative stylesheet if you don't want to mix the styles in one CSS module:
 import alternativeComponentStyles from './alternativeComponentStyles.module.css'
 */
 function App() {
@@ -290,7 +306,7 @@ This can allow you to easily conditionally apply styles to elements of a compone
 />
 ```
 
-Something that's probably more useful though, if a little more complex to pull off, is the ability to overwrite things like a 'selected' property.
+Something that's probably more useful though, is the ability to overwrite conditional styles that are placed on an element from inside a component from the outside:
 
 ```jsx
 import cssModule from "./Component.module.css";
@@ -306,14 +322,7 @@ function Component({ renderList = [], customCSS = {}, ...props }) {
         {renderList.map((item) => (
           <li
             key={item.id}
-
-            {/*
-              Since modifiers are might normally be used to modify from outside the component, you may have to explicitly add a modifier
-              Another option could be creating a `listItemSelected` child name, though it's less conventional.
-            */}
-            className={classNames('Component__listItem') + (selected === item.id ? ` ${classNames('Component__listItem--selected')}` : ' ')}
-            {/*Apply inline styles to overwrite the selected state*/}
-            style={selected === item.id && styles("Component__listItem--selected")}
+            {...(selected === item.id ? useName('Component__listItemSelected') : useName('Component__listItem'))}
             onClick={() => setSelected(item.id)}
           >
             {item.text}
@@ -334,9 +343,9 @@ function App() {
   return (
     <div className='App'>
       <Component renderList={data} customCSS={CustomCSS({
-        // use styles to apply inline styles directly for only selected elements, if you wanted to provide a way to change the selected class
+        // use styles to apply inline styles directly for only selected elements
         styles: {
-          "Component__listItem--selected": {backgroundColor: 'gray'}
+          "Component__listItemSelected": {backgroundColor: 'gray'}
         }
       })}>
     </div>
@@ -364,15 +373,11 @@ const defaultStyle = ccn.CustomCSS({
 });
 
 function Component({ customCSS = {}, ...props }) {
-  const { unstyled, classNames, styles, childComponents } = ccn.use(
-    defaultStyle,
-    customCSS
-  );
+  const { useName,  childComponents } = ccn.use(defaultStyle, customCSS);
 
   return (
-    <div className={classNames("Component")}>
-      <div className={classNames("Component__child")} />
-
+    <div {...useName("Component")}>
+      <div {...useName("Component__child")}> </div>
       {/*
         This function call might:
         1. Pass a consumer-defined CustomCSS object to AnotherComponent if the consuming component's `CustomCSS.childComponents` property specifies one
