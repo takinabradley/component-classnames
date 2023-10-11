@@ -62,10 +62,10 @@ import ccn from "component-classnames";
 
 const defaultStyles = {
   classNames: {
-    Component: ['text-lg', 'font-semibold']
-    Component__child: ['bg-sky-500', 'hover:bg-sky-700']
-  }
-}
+    Component: ["text-lg", "font-semibold"],
+    Component__child: ["bg-sky-500", "hover:bg-sky-700"],
+  },
+};
 
 function Component() {
   const { classNames } = cnn.use(defaultStyles);
@@ -73,11 +73,8 @@ function Component() {
   return (
     // applies string 'text-lg font-semibold' to container className
     <div {...useName("Component")}>
-
       {/* applies string 'bg-sky-500 hover:bg-sky-700' to child className*/}
-      <div {...useName("Component__child")}>
-        I'm this component's child!
-      </div>
+      <div {...useName("Component__child")}>I'm this component's child!</div>
     </div>
   );
 }
@@ -124,10 +121,10 @@ A current limitation of `component-classnames` is that it's hard use modifiers t
 
 ```jsx
 // Normal BEM convention:
-<div className={ selected ? 'Component__child Component__child--selected' : 'Component__child'}>
+<div className={ selected ? 'Component__child Component__child--selected' : 'Component__child'} />
 
 // Recommended convention while using `component-classnames`
-<div {...( selected ? useName('Component__child') : useName('Component_selectedChild'))}>
+<div {...( selected ? useName('Component__child') : useName('Component_selectedChild'))} />
 ```
 
 While this means you may have to duplicate some code in CSS, reusable components are often small. This convention makes it easier for consumers of components to re-style selected and unselected elements as desired, and seems to be the best solution given other alternatives.
@@ -177,12 +174,10 @@ function Component({ customCSS = {} }) {
 
 ```jsx
 // App.jsx
-import Component from './Component.jsx'
-
+import Component from "./Component.jsx";
 function App() {
-
   return (
-    <div className='App'>
+    <div className="App">
       {/*
         This tells the component to apply the `column` modifier to the element
         using the `Component` name, shifting the layout with ease.
@@ -192,9 +187,9 @@ function App() {
         modify a component to suit the page's needs without effecting other
         pages.
       */}
-      <Component customCSS={modifiers: {Component: 'column'}} />
+      <Component customCSS={{ modifiers: { Component: "column" } }} />
     </div>
-  )
+  );
 }
 ```
 
@@ -236,12 +231,12 @@ function Component({ customCSS = {} }) {
 
 ```jsx
 // change the child's background color via inline styles
-<Component customCSS={styles: {Component__child: {backgroundColor: 'white'}}}>
+<Component customCSS={ {styles: { Component__child: { backgroundColor: 'white' } } } }>
 ```
 
 ```jsx
 // apply additional classes to any element by passing them in via props
-<Component customCSS={classNames: {Component__child: ['some-additional-class'] }}>
+<Component customCSS={{ classNames: { Component__child: ['some-additional-class'] } } }>
 ```
 
 This can be more powerful when you realize that you can map properties from a CSS module in a different component to restyle a reusable one. This lets you optionally add to a reusable component's styles when you're writing the styles for it's parent:
@@ -250,7 +245,7 @@ This can be more powerful when you realize that you can map properties from a CS
 import AppStyles from './App.module.css'
 function App() {
   return (
-    <Component customCSS={{ classNames: {Component__child: [AppStyles.Component__child] } }}>
+    <Component customCSS={{ classNames: { Component__child: [AppStyles.Component__child] } }}>
   )
 }
 ```
