@@ -16,7 +16,7 @@
     "classnames": "^2.3.2"
   },
   "description": "`component-classnames` is a small library meant to aid in creating reusable React components with flexible stylings.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "directories": {
     "test": "tests"
   },
