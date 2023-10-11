@@ -1,8 +1,12 @@
 import CustomCSS from "./CustomCSS";
 import type { CSSProperties, CustomCSSConfig } from "./CustomCSS";
 interface CCNController {
-    classNames: (componentName: string) => string;
-    styles: (componentName: string) => CSSProperties;
+    classNames: (elementname: string) => string;
+    styles: (elementname: string) => CSSProperties;
+    useName: (elementname: string) => {
+        className: string;
+        style: CSSProperties;
+    };
 }
 declare function use(...configs: CustomCSSConfig[]): CCNController;
 export type { CustomCSS };

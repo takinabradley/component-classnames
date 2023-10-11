@@ -465,3 +465,40 @@ describe('`styles` helper', () => {
   })
 
 })
+
+describe('`useName` helper', () => {
+  it('creates an object with `className` and `style` properties', () => {
+    const { useName } = ccn.use()
+    expect(useName('something')).toEqual({className: '', style: {}})
+  })
+
+  it('sets the value of `className` propertly as expected', () => {
+    /* Should act exactly like the `classNames` helper */
+    const { classNames, useName } = ccn.use(
+      { stylesheets: [stylesheet1], classNames: { Component__child: ['another-name'] } },
+      { modifiers: { Component__child: ['mod'] } }
+    )
+
+    const properties = useName("Component__child")
+    expect(properties.className).toBe("hashed-child_element-name another-name MODDED")
+    expect(properties.className).toBe(classNames("Component__child"))
+    expect(properties.style).toEqual({})
+  })
+
+  it('sets the value of `style` property as expected', () => {
+    /* Should act exactly like the `styles` helper */
+    const { styles, useName } = ccn.use(
+      { styles: { Component: { backgroundColor: 'white' } } },
+      { styles: { Component: { color: 'rebeccapurple' } } }
+    )
+    
+    const properties = useName('Component')
+    expect(properties.style).toStrictEqual({
+      backgroundColor: 'white',
+      color: 'rebeccapurple'
+    })
+
+    expect(properties.style).toStrictEqual(styles("Component"))
+  })
+
+})

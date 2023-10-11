@@ -6,6 +6,7 @@ import cnDedupe from 'classnames/dedupe'
 interface CCNController {
   classNames: (elementname: string) => string
   styles: (elementname: string) => CSSProperties,
+  useName: (elementname: string) => {className: string, style: CSSProperties}
 }
 
 function getClassNamesFromStylesheets(customCSS: CustomCSS, elementName: string) {
@@ -53,9 +54,15 @@ function use(...configs: CustomCSSConfig[]): CCNController {
 
   const styles = (elementName: string): CSSProperties => mergedCustomCSS.styles[elementName] || {}
 
+  const useName = (elementName: string): {className: string, style: CSSProperties} => ({
+    className: classNames(elementName),
+    style: styles(elementName)
+  })
+
   return {
     classNames,
     styles,
+    useName
   }
 }
 

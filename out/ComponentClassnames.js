@@ -197,10 +197,15 @@ var use = function(...configs) {
     const allNames = dedupe.default([...cssModuleNames, ...classNameNames, ...modifierNames]);
     return allNames;
   };
-  const styles = (componentName) => mergedCustomCSS.styles[componentName] || {};
+  const styles = (elementName) => mergedCustomCSS.styles[elementName] || {};
+  const useName = (elementName) => ({
+    className: classNames(elementName),
+    style: styles(elementName)
+  });
   return {
     classNames,
-    styles
+    styles,
+    useName
   };
 };
 var ComponentClassnames_default = {
