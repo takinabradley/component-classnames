@@ -13,6 +13,12 @@
 
 By making the above easy, `component-classnames` hopes to enable the prospect of applying styles to reusable components in a 'bottom-up' manner, allowing you to write the styles that make the most sense now, and let the consumer of the component to easily make changes to them down the road if needed.
 
+## Installation
+
+```
+npm install @takinabradley/component-classnames
+```
+
 ## Applying default styles:
 
 The `component-classnames` module currently only has one function, named `use`.
@@ -68,7 +74,7 @@ const defaultStyles = {
 };
 
 function Component() {
-  const { classNames } = cnn.use(defaultStyles);
+  const { useName } = cnn.use(defaultStyles);
 
   return (
     // applies string 'text-lg font-semibold' to container className
